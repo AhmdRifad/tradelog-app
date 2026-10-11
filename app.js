@@ -83,14 +83,60 @@ function resultOf(t) {
   const net = gross - (num(t.fees) || 0);
   return {outcome: net > 0 ? "Win" : net < 0 ? "Loss" : "Break-even", gross, net, r: plannedRisk(t) > 0 ? net/plannedRisk(t) : null};
 }
+
 function switchView(view) {
-  document.querySelectorAll(".view").forEach(el=>el.classList.toggle("active",el.id===`view-${view}`));
-  document.querySelectorAll(".nav-tab").forEach(el=>el.classList.toggle("active",el.dataset.view===view));
-  if (view==="trades") renderTrades();
-  if (view==="dashboard") renderDashboard();
-  if (view==="checklist") renderChecklist();
-  window.scrollTo({top:0,behavior:"smooth"});
+  const views = [...document.querySelectorAll(".view")];
+  const tabs = [...document.querySelectorAll(".nav-tab")];
+
+  const currentView = views.find(el => el.classList.contains("active"));
+  const nextView = $(`view-${view}`);
+
+  if (!nextView) return;
+
+  const currentIndex = tabs.findIndex(
+    tab => tab.dataset.view === currentView?.id.replace("view-", "")
+  );
+
+  const nextIndex = tabs.findIndex(
+    tab => tab.dataset.view === view
+  );
+
+  const direction = nextIndex >= currentIndex ? 1 : -1;
+
+  views.forEach(el => {
+    el.classList.toggle("active", el.id === `view-${view}`);
+  });
+
+  tabs.forEach(el => {
+    el.classList.toggle("active", el.dataset.view === view);
+  });
+
+  if (currentView !== nextView) {
+    nextView.animate(
+      [
+        {
+          transform: `translateX(${direction * 24}px)`,
+          opacity: 0
+        },
+        {
+          transform: "translateX(0)",
+          opacity: 1
+        }
+      ],
+      {
+        duration: 260,
+        easing: "cubic-bezier(0.22, 1, 0.36, 1)"
+      }
+    );
+  }
+
+  if (view === "trades") renderTrades();
+  if (view === "dashboard") renderDashboard();
+  if (view === "checklist") renderChecklist();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
 document.querySelectorAll(".nav-tab").forEach(btn=>btn.addEventListener("click",()=>switchView(btn.dataset.view)));
 document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>switchView(btn.dataset.go)));
 
