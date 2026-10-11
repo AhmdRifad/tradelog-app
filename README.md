@@ -3,7 +3,7 @@
 A lightweight, installable trading journal for recording trades,
 reviewing results, and following a consistent checklist.
 
-**Live app:** https://ahmdrifad.github.io/tradelog-app/\
+**Live app:** [https://ahmdrifad.github.io/tradelog-app/\](https://ahmdrifad.github.io/tradelog-app/)
 **Repository:** https://github.com/AhmdRifad/tradelog-app
 
 ## Features
