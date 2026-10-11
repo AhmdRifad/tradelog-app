@@ -84,51 +84,98 @@ function resultOf(t) {
   return {outcome: net > 0 ? "Win" : net < 0 ? "Loss" : "Break-even", gross, net, r: plannedRisk(t) > 0 ? net/plannedRisk(t) : null};
 }
 
+
+let currentSwipeView = "dashboard";
+
 function switchView(view) {
   const views = [...document.querySelectorAll(".view")];
   const tabs = [...document.querySelectorAll(".nav-tab")];
-
-  const currentView = views.find(el => el.classList.contains("active"));
-  const nextView = $(`view-${view}`);
+  const nextView = document.getElementById(`view-${view}`);
 
   if (!nextView) return;
 
-  const currentIndex = tabs.findIndex(
-    tab => tab.dataset.view === currentView?.id.replace("view-", "")
-  );
+  const names = tabs.map(tab => tab.dataset.view);
+  const oldIndex = names.indexOf(currentSwipeView);
+  const newIndex = names.indexOf(view);
+  const direction = newIndex >= oldIndex ? 1 : -1;
 
-  const nextIndex = tabs.findIndex(
-    tab => tab.dataset.view === view
-  );
-
-  const direction = nextIndex >= currentIndex ? 1 : -1;
+  const changed = currentSwipeView !== view;
+  currentSwipeView = view;
 
   views.forEach(el => {
     el.classList.toggle("active", el.id === `view-${view}`);
   });
 
-  tabs.forEach(el => {
-    el.classList.toggle("active", el.dataset.view === view);
+  tabs.forEach(tab => {
+    tab.classList.toggle("active", tab.dataset.view === view);
   });
 
-  if (currentView !== nextView) {
+  if (changed) {
     nextView.animate(
       [
-        {
-          transform: `translateX(${direction * 24}px)`,
-          opacity: 0
-        },
-        {
-          transform: "translateX(0)",
-          opacity: 1
-        }
+        { transform: `translateX(${direction * 45}px)`, opacity: 0.65 },
+        { transform: "translateX(0)", opacity: 1 }
       ],
       {
-        duration: 260,
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)"
+        duration: 240,
+        easing: "ease-out"
       }
     );
   }
+
+  if (view === "trades") renderTrades();
+  if (view === "dashboard") renderDashboard();
+  if (view === "checklist") renderChecklist();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll(".nav-tab").forEach(btn => {
+  btn.addEventListener("click", () => switchView(btn.dataset.view));
+});
+
+document.querySelectorAll("[data-go]").forEach(btn => {
+  btn.addEventListener("click", () => switchView(btn.dataset.go));
+});
+
+/* Swipe left or right to change pages */
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener("touchstart", event => {
+  if (event.touches.length !== 1) return;
+
+  touchStartX = event.touches[0].clientX;
+  touchStartY = event.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener("touchend", event => {
+  if (event.changedTouches.length !== 1) return;
+
+  const dx = event.changedTouches[0].clientX - touchStartX;
+  const dy = event.changedTouches[0].clientY - touchStartY;
+
+  // Ignore vertical scrolling and small movements.
+  if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.3) {
+    return;
+  }
+
+  // Don't switch pages while interacting with forms or dialogs.
+  if (event.target.closest(
+    "input, textarea, select, button, a, dialog"
+  )) return;
+
+  const names = [...document.querySelectorAll(".nav-tab")]
+    .map(tab => tab.dataset.view);
+
+  const index = names.indexOf(currentSwipeView);
+  const nextIndex = dx < 0 ? index + 1 : index - 1;
+
+  if (nextIndex >= 0 && nextIndex < names.length) {
+    switchView(names[nextIndex]);
+  }
+}, { passive: true });
+
 
   if (view === "trades") renderTrades();
   if (view === "dashboard") renderDashboard();
