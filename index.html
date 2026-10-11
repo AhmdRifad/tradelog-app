@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101923">
+  <meta name="description" content="Offline trading journal and confluence checklist">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <title>TradeLog — Trading Journal</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="TradeLog home">
+        <span class="brand-mark">T<span>+</span></span>
+        <span><strong>TradeLog</strong><small>JOURNAL & PROCESS</small></span>
+      </a>
+      <div class="top-actions">
+        <span class="offline-pill"><i></i> Offline ready</span>
+        <button class="icon-btn" id="exportBtn" title="Export backup" aria-label="Export backup">⇩</button>
+      </div>
+    </header>
+
+    <nav class="nav-tabs" aria-label="Main navigation">
+      <button class="nav-tab active" data-view="dashboard">Overview</button>
+      <button class="nav-tab" data-view="trades">Trade journal</button>
+      <button class="nav-tab" data-view="checklist">Confluence</button>
+      <button class="nav-tab" data-view="settings">Settings</button>
+    </nav>
+
+    <main>
+      <section class="view active" id="view-dashboard">
+        <div class="page-heading">
+          <div><p class="eyebrow">YOUR PROCESS, IN FOCUS</p><h1>Trading overview</h1><p class="muted">Review your decisions. Improve one trade at a time.</p></div>
+          <button class="primary-btn" id="newTradeTop">＋ Log a trade</button>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card"><span class="stat-label">Net P&amp;L</span><strong id="statPnl">$0.00</strong><span class="stat-foot" id="pnlFoot">After recorded fees</span></article>
+          <article class="stat-card"><span class="stat-label">Win rate</span><strong id="statWin">—</strong><span class="stat-foot" id="winFoot">Closed trades only</span></article>
+          <article class="stat-card"><span class="stat-label">Closed trades</span><strong id="statTrades">0</strong><span class="stat-foot">Your logged history</span></article>
+          <article class="stat-card"><span class="stat-label">Average R</span><strong id="statR">—</strong><span class="stat-foot">Net P&amp;L ÷ planned risk</span></article>
+        </div>
+        <div class="content-grid">
+          <article class="panel chart-panel">
+            <div class="panel-heading"><div><h2>Equity journey</h2><p class="muted">Cumulative net P&amp;L from closed trades</p></div><span class="chart-tag">ALL TIME</span></div>
+            <div id="equityChart" class="chart-area"><div class="empty-state">Log a closed trade to start your chart.</div></div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Process score</h2><p class="muted">Checklist completion</p></div></div>
+            <div class="score-wrap"><div class="score-ring" id="scoreRing"><div><strong id="scoreValue">—</strong><span>average score</span></div></div></div>
+            <p class="muted small center" id="scoreCaption">Complete the checklist before entering a trade.</p>
+            <button class="secondary-btn full" data-go="checklist">Open checklist</button>
+          </article>
+        </div>
+        <article class="panel recent-panel">
+          <div class="panel-heading"><div><h2>Recent trades</h2><p class="muted">Your latest journal entries</p></div><button class="text-btn" data-go="trades">View all →</button></div>
+          <div id="recentTrades" class="table-wrap"></div>
+        </article>
+        <p class="disclaimer">For record-keeping and learning only. Statistics describe your past records and do not predict future results.</p>
+      </section>
+
+      <section class="view" id="view-trades">
+        <div class="page-heading"><div><p class="eyebrow">RECORD & REVIEW</p><h1>Trade journal</h1><p class="muted">Capture the plan, the outcome, and the lesson.</p></div><button class="primary-btn" id="newTradeBtn">＋ New trade</button></div>
+        <div class="toolbar"><input id="tradeSearch" type="search" placeholder="Search market, setup or notes…"><select id="resultFilter"><option value="all">All outcomes</option><option value="Win">Wins</option><option value="Loss">Losses</option><option value="Break-even">Break-even</option><option value="Open">Open trades</option></select></div>
+        <div id="tradeList" class="trade-list"></div>
+      </section>
+
+      <section class="view" id="view-checklist">
+        <div class="page-heading"><div><p class="eyebrow">BEFORE YOU ENTER</p><h1>Confluence checklist</h1><p class="muted">Use your rules—not a score alone—to decide whether a setup qualifies.</p></div></div>
+        <div class="check-layout">
+          <article class="panel checklist-panel">
+            <div class="panel-heading"><div><h2>Setup validation</h2><p class="muted">Mark each item Yes, No, or N/A.</p></div><button class="text-btn" id="resetChecklist">Reset</button></div>
+            <div id="checklistItems"></div>
+            <div class="check-summary">
+              <div><span class="muted small">Checklist score</span><strong id="checkScore">0%</strong></div>
+              <div><span class="muted small">Process gate</span><strong id="checkDecision" class="decision wait">WAIT / REVIEW</strong></div>
+            </div>
+            <p class="small muted">A failed critical rule should mean no trade, regardless of the percentage. Customize these items to match your tested strategy.</p>
+            <button class="primary-btn full" id="saveChecklist">Save checklist snapshot</button>
+          </article>
+          <aside class="panel">
+            <h2>Quick risk planner</h2><p class="muted">Calculate position size before placing an order.</p>
+            <div class="form-grid single">
+              <label>Account balance<input id="riskBalance" type="number" min="0" step="any" placeholder="1000"></label>
+              <label>Risk per trade (%)<input id="riskPercent" type="number" min="0" max="100" step="0.1" value="1"></label>
+              <label>Entry price<input id="riskEntry" type="number" step="any" placeholder="100"></label>
+              <label>Stop-loss price<input id="riskStop" type="number" step="any" placeholder="98"></label>
+              <label>Take-profit price<input id="riskTarget" type="number" step="any" placeholder="104"></label>
+            </div>
+            <div class="calc-results">
+              <div><span>Risk amount</span><strong id="calcRisk">$0.00</strong></div>
+              <div><span>Position size (units)</span><strong id="calcSize">—</strong></div>
+              <div><span>Planned R:R</span><strong id="calcRR">—</strong></div>
+            </div>
+            <p class="small muted">Position-size math is simplified. Contract multipliers, leverage, lot sizes, fees, slippage and exchange rules may change the real amount.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="page-heading"><div><p class="eyebrow">YOUR DATA, YOUR DEVICE</p><h1>Settings & backup</h1><p class="muted">Manage your journal and protect your records.</p></div></div>
+        <article class="panel settings-panel">
+          <h2>Data backup</h2><p class="muted">Your journal is saved in this browser on this device. Export regularly; clearing browser data or uninstalling/resetting the browser may remove it.</p>
+          <div class="settings-actions"><button class="primary-btn" id="exportSettings">Export JSON backup</button><label class="secondary-btn file-label">Import backup<input type="file" id="importFile" accept="application/json"></label><button class="danger-btn" id="clearData">Delete all local data</button></div>
+          <p class="small muted" id="storageStatus">Checking local storage…</p>
+        </article>
+        <article class="panel settings-panel"><h2>How calculations work</h2>
+          <div class="formula-list">
+            <p><strong>Risk amount</strong><code>Account balance × risk %</code></p>
+            <p><strong>Position size</strong><code>Risk amount ÷ |entry − stop|</code></p>
+            <p><strong>Planned R:R</strong><code>|target − entry| ÷ |entry − stop|</code></p>
+            <p><strong>Net P&amp;L</strong><code>Gross P&amp;L − fees</code></p>
+            <p><strong>Actual R</strong><code>Net P&amp;L ÷ planned risk amount</code></p>
+          </div>
+        </article>
+      </section>
+    </main>
+    <footer>TRADELOG <span>•</span> LOCAL-FIRST JOURNAL</footer>
+  </div>
+
+  <dialog id="tradeDialog">
+    <form id="tradeForm" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">TRADE RECORD</p><h2 id="dialogTitle">Log a trade</h2></div><button type="button" class="icon-btn" id="closeDialog" aria-label="Close">×</button></div>
+      <input type="hidden" id="tradeId">
+      <div class="form-grid">
+        <label>Date &amp; time<input id="tradeDate" type="datetime-local" required></label>
+        <label>Market / pair<input id="market" placeholder="e.g. BTC/USDT" required maxlength="60"></label>
+        <label>Direction<select id="direction"><option>Long</option><option>Short</option></select></label>
+        <label>Timeframe<select id="timeframe"><option>1m</option><option>5m</option><option>15m</option><option>30m</option><option>1H</option><option>4H</option><option>1D</option><option>1W</option><option>Other</option></select></label>
+        <label class="span-2">Setup / strategy<input id="setup" placeholder="e.g. breakout retest" maxlength="100"></label>
+        <label>Account balance<input id="balance" type="number" min="0" step="any" placeholder="1000"></label>
+        <label>Risk (%)<input id="riskPct" type="number" min="0" max="100" step="any" value="1"></label>
+        <label>Entry price<input id="entry" type="number" step="any" required></label>
+        <label>Stop loss<input id="stop" type="number" step="any" required></label>
+        <label>Take profit<input id="target" type="number" step="any"></label>
+        <label>Exit price (leave blank if open)<input id="exit" type="number" step="any"></label>
+        <label>Gross result ($)<input id="gross" type="number" step="any" placeholder="Before fees"></label>
+        <label>Fees ($)<input id="fees" type="number" min="0" step="any" value="0"></label>
+        <label class="span-2">Checklist score (%)<input id="tradeScore" type="number" min="0" max="100" step="1" placeholder="Optional"></label>
+        <label class="span-2">Notes / emotion / lesson<textarea id="notes" rows="3" placeholder="Why did you take it? What did you learn?"></textarea></label>
+        <label class="span-2">Screenshot URL (optional)<input id="screenshot" type="url" placeholder="https://…"></label>
+      </div>
+      <div class="modal-calc" id="modalCalc">Planned risk: — <span>•</span> Planned R:R: —</div>
+      <div class="dialog-actions"><button type="button" class="secondary-btn" id="cancelTrade">Cancel</button><button type="submit" class="primary-btn">Save trade</button></div>
+    </form>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
